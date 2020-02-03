@@ -2,10 +2,10 @@
     <div class="box" :style="{'position': 'relative'}">
         <InfiniteScroll 
             :list="list"
-            :THRESHOLD="THRESHOLD"
-            :height="height"
+            :THRESHOLD="15"
+            :space="5"
         >
-            <template slot="header"  scope="props">
+            <template slot="item"  scope="props">
                 <div class="li-card" >{{props.item.value}}</div> 
             </template>
         </InfiniteScroll>
@@ -22,11 +22,19 @@ export default {
     },
     data() {
         return {
-            list: list,
-            THRESHOLD: 15,
+            list: [],
             height: 190
-
         }
+    },
+    created () {
+        var newList = [];
+        for(var i in list) {
+            let data = {};
+            data.top = this.height * i + 10;
+            data.value = list[i].value;
+            newList.push(data);
+        }
+        this.list = newList;
     }
 }
 </script>
