@@ -1,43 +1,33 @@
 <template>
-    <ul>
-        <li v-for="(column,colindex) in waterfall" :key="colindex" :ref="`waterfall`">
-            <InfiniteScroll 
-                :list="column.list"
-                :THRESHOLD="9"
-                :space="3"
-            >
-                <template slot="item"  scope="props">
-                   <img :src="props.item.src" :width="waterfallImgWidth">
-                </template>
-            </InfiniteScroll>
-        </li>
-    </ul>
+    <div class="box" :style="{'position': 'relative'}" v-if="computedEnd">
+        <InfiniteScroll 
+            :list="list"
+            :THRESHOLD="12"
+            :space="4"
+        >
+            <template slot="item"  scope="props">
+                <img :src="props.item.src" :width="waterfallImgWidth">
+            </template>
+        </InfiniteScroll>
+    </div>
 </template>
-
 
 <script>
 import InfiniteScroll from '../components//infinite.vue';
+import list from './list.js';
+
 export default {
     components: {
         InfiniteScroll
     },
-    data () {
+    data() {
         return {
-            waterfall: {
-                0: {
-                    list: [],
-                    height: 0
-                },
-                1: {
-                    list: [],
-                    height: 0
-                }
-            },
             list: [],
             height: 190,
-            waterfallImgCol: 2,
-            waterfallImgWidth: 150
-        };
+            columnTop: 0,
+            waterfallImgWidth: 150,
+            computedEnd: false
+        }
     },
     created () {
         var list = [
@@ -64,62 +54,71 @@ export default {
             "https://hbimg.huabanimg.com/1c8f48c46c1240166a59d4921adfe8b8a9c89cc5e75e5-sMOHCv_fw658",
             "https://hbimg.huabanimg.com/7083eab8c65cc07bd1c02db466348ab025bfebdf163c41-OUU3z8_fw658"
         ]
-        
-        let baseLen = this.list.length;
-        for (let i in list) {
-            let aImg = new Image();
-            aImg.src = list[i];
-            aImg.onload = aImg.onerror = (e)=>{
-
-                let imgData = {};
-                // 根据设定的列宽度求出图片的高度
-                imgData.height = this.waterfallImgWidth/aImg.width*aImg.height;
-                imgData.src = list[i];
-
-                //找出当前最短列的索引
-                let minIndex = this.waterfall[0].height <= this.waterfall[1].height? 0:1;
-                //获取最短列底部高度，既下一张图片的顶部高度
-                imgData.top = this.waterfall[minIndex].height;
-                //将图片添加至对应列的列表中
-                this.waterfall[minIndex].list.push(imgData);
-                //改变当前列高度
-                this.waterfall[minIndex].height += imgData.height + 10;
-                this.rankEnd(baseLen,list.length);
-            }
-        }
+        this.computedEnd = false;
+        this.addImg(list);
     },
     methods: {
+        addImg (list) {
+            let baseLen = this.list.length;
+            for (let i in list) {
+                let aImg = new Image();
+                aImg.src = list[i];
+                aImg.onload = aImg.onerror = (e)=>{
+
+                    let imgData = {};
+                    // 根据设定的列宽度求出图片的高度
+                    imgData.height = this.waterfallImgWidth/aImg.width*aImg.height;
+                    imgData.src = list[i];
+
+                    // 调用图片位置计算方法
+                    imgData.top = this.columnTop + 10;;
+                    //改变当前列高度
+                    this.columnTop += imgData.height + 10;
+                    //将图片添加至对应列的列表中
+                    this.list.push(imgData);
+                    this.rankEnd(baseLen,list.length);
+                }
+            }
+        },
         rankEnd (baseLen,addLen) {
             if (this.list.length==(baseLen+addLen)) this.computedEnd = true;
         },
-        //计算图片偏移量
-        rankImg(imgData){
+        loadMore() {
+            let list = [
+            ];
+            this.addImg(list);
         }
     }
 }
 </script>
 
-<style lang="less">
-ul,li{
-    list-style: none;
-    padding: 0;
+<style>
+body,html{
+    height: 100%;
 }
-ul {
+.box {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+}
+
+.box {
+    font-family: sans-serif;
+    text-align: center;
+}
+
+.li-card {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     justify-content: center;
-    li {
-        position: relative;
-        display: flex;
-        text-align: center;
-        flex-direction: column;
-        justify-content: center;
-        align-content: flex-start;
-        width: 45%;
-        height: 10px;
-        img {
-            position: absolute;
-            left: 0;
-        }
-    }
+    list-style: none;
+    box-shadow: 2px 2px 9px 0px #bbb;
+    padding: 70px 0;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    width: 80%;
 }
 </style>

@@ -4,8 +4,9 @@
             class="box-item"
             v-for="(item,index) in comList" 
             :id="index === 0 ? 'top' : (index === lastIndex ? 'bottom' : '')" 
-            :ref="getReference(index,index === lastIndex)" 
+            :ref="index===0?'topRef':(index===lastIndex?'bottomRef':null)" 
             :style="{'top': item.top+'px'}" 
+            :index="index"
             :key="index">
             <slot name="item" v-bind:item="item"></slot>
         </div>
@@ -21,12 +22,10 @@ export default {
             required: true
         },
         THRESHOLD: {
-            type: Number,
-            default: 15
+            type: Number
         },
         space: {
-            type: Number,
-            default: 5
+            type: Number
         }
     },
     data() {
@@ -47,19 +46,19 @@ export default {
             return  this.list.length - 1 - this.THRESHOLD;
         },
         maxEndIndex () {
-            return  this.list.length - 1;
+            return  this.list.length;
         }
     },
     mounted () {
-        this.$nextTick(() => {
+        setTimeout(() => {
             this.intiateScrollObserver();
-        });
+        }, 0);
     },
     methods: {
         intiateScrollObserver () {
             const options = {
                 root: null,
-                rootMargin: '100px',
+                rootMargin: '300px',
                 threshold: 0.1
             };
             this.observer = new IntersectionObserver(this.callback, options);
@@ -67,9 +66,9 @@ export default {
             if (this.$refs.topRef) this.observer.observe(this.$refs.topRef[0]);
             if (this.$refs.bottomRef) this.observer.observe(this.$refs.bottomRef[0]);
         },
-        getReference (index, isLastIndex) {
+        getReference (index) {
             if (index === 0) return 'topRef';
-            if (isLastIndex) return 'bottomRef';
+            if (index===this.lastIndex) return 'bottomRef';
             return null;
         },
         callback (entries, observer) {
@@ -86,7 +85,7 @@ export default {
                 }
 
                 if (entry.isIntersecting && entry.target.id === "bottom") {
-
+                    
                     const newStart = (end - this.space) <= this.maxStartIndex ? end - this.space : this.maxStartIndex;
                     const newEnd = (end + this.space*2) <= this.maxEndIndex ? end + this.space*2 : this.maxEndIndex;
 

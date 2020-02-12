@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import InfiniteScroll from './infinite.vue';
+import InfiniteScroll from '../components//infinite.vue';
 import list from './list.js';
 
 export default {
